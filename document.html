@@ -19,6 +19,8 @@
       --sidebar:330px;
       --shadow:0 18px 44px rgba(15, 23, 42, 0.09);
     }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     html,body{
       margin:0;
       padding:0;
@@ -50,8 +52,8 @@
     .toc-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}
     .search{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--border);border-radius:12px;font-size:1rem;margin:0 0 10px;background:#fff;outline:none}
     .search:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(15, 118, 110, 0.10)}
-    .toc a{display:block;padding:8px 10px;border-radius:10px;color:var(--accent-strong);text-decoration:none;transition:background-color .15s ease,color .15s ease,transform .15s ease}
-    .toc a:hover{text-decoration:underline}
+    .toc a{display:block;padding:8px 10px;border-radius:10px;color:var(--accent-strong);text-decoration:none;transition:background-color .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease}
+    .toc a:hover{background:rgba(15, 118, 110, 0.06);transform:translateX(-2px)}
     .toc a.active{background:var(--accent-soft);font-weight:700;color:var(--accent-strong);text-decoration:none}
     .toc ul{list-style:none;padding:0;margin:0}
     .toc li{margin:3px 0}
@@ -123,13 +125,81 @@
     .module-intro p{margin-top:0}
     .param{margin-top:8px;font-size:.88rem;color:#5b6b82;background:#f8fbff;border:1px solid #e4ebf2;border-radius:10px;padding:7px 10px}
     .hidden{display:none}
-    .page > section{background:rgba(255,255,255,0.88);border:1px solid rgba(215,221,232,0.8);border-radius:22px;padding:6px 20px 14px;margin:18px 0;box-shadow:0 10px 26px rgba(15, 23, 42, 0.06);backdrop-filter:blur(3px)}
-    .page > section:hover{box-shadow:0 14px 32px rgba(15, 23, 42, 0.08)}
+    .page > section{
+      background:rgba(255,255,255,0.88);
+      border:1px solid rgba(215,221,232,0.8);
+      border-radius:22px;
+      padding:6px 20px 14px;
+      margin:18px 0;
+      box-shadow:0 10px 26px rgba(15, 23, 42, 0.06);
+      backdrop-filter:blur(3px);
+      transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      animation:sectionIn .65s ease both;
+      animation-delay:var(--reveal-delay, 0ms);
+    }
+    .page > section:hover{
+      transform:translateY(-3px);
+      box-shadow:0 16px 36px rgba(15, 23, 42, 0.10);
+      border-color:rgba(15, 118, 110, 0.20);
+    }
+    .module, .note, .warn{
+      transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .module:hover, .note:hover, .warn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 22px 46px rgba(15, 23, 42, 0.12);
+    }
+    .hero{
+      animation:heroIn .85s ease both;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.45) 48%, transparent 56%);
+      transform:translateX(-120%);
+      animation:shine 6s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .hero h1{
+      animation:rise .7s ease .05s both;
+    }
+    .hero p, .hero .note{
+      animation:rise .7s ease .15s both;
+    }
+    .hero .meta{animation-delay:.22s}
+    .note{background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%)}
+    .warn{background:linear-gradient(180deg,#fffaf0 0%, #fff7ed 100%);border-color:#f7c97a}
+    .page > section:nth-child(odd){transform-origin:top center}
+    @keyframes sectionIn{
+      from{opacity:0;transform:translateY(18px) scale(.985)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    @keyframes heroIn{
+      from{opacity:0;transform:translateY(22px) scale(.99)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    @keyframes rise{
+      from{opacity:0;transform:translateY(12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes shine{
+      0%, 62%{transform:translateX(-120%)}
+      100%{transform:translateX(120%)}
+    }
     @media (max-width:1100px){
       body{padding:24px}
       .toc{position:static;width:auto;max-height:none;margin-bottom:24px}
       td:first-child,td:nth-child(2),td:nth-child(3){width:auto}
       .hero h1{font-size:2rem}
+    }
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      *, *::before, *::after{
+        animation-duration:0.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -1015,7 +1085,7 @@ print(tms.Graph())</code></pre>
       return `<tr><td><code>${name}</code></td><td>${desc}<div class="param">${inputSummary(name)}</div></td><td><div class="sample"><span class="sample-label">Example</span><pre><code>${example}</code></pre><div class="output"><strong>Output</strong><code>${output}</code></div></div></td></tr>`;
     }
 
-    docs.forEach(([id, title, file, items]) => {
+    docs.forEach(([id, title, file, items], idx) => {
       const li = document.createElement('li');
       li.innerHTML = `<a href="#${id}">${title}</a>`;
       tocList.appendChild(li);
@@ -1034,10 +1104,12 @@ print(tms.Graph())</code></pre>
         </div>
       `;
       content.appendChild(section);
+      section.style.setProperty('--reveal-delay', `${90 + idx * 45}ms`);
     });
 
     const extra = document.createElement('section');
     extra.id = 'usage';
+    extra.style.setProperty('--reveal-delay', `${90 + docs.length * 45}ms`);
     extra.innerHTML = `
       <h2>نحوه استفاده و جمع‌بندی</h2>
       <p>به‌دلیل re-export شدن همه چیز در <code>__init__.py</code>، ساده‌ترین راه استفاده این است. این روش برای شروع سریع، خوانایی بالا و دسترسی به تمام API بدون importهای طولانی بسیار مناسب است.</p>
@@ -1055,10 +1127,61 @@ print(tms.mean([1, 2, 3, 4]))</code></pre>
 
     const filter = document.getElementById('filter');
     const blocks = Array.from(document.querySelectorAll('section, .note, .warn'));
+    const normalize = (value) => value
+      .toString()
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[_\-().,;:\/\\[\]{}<>!?'"`~@#$%^&*=+|]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const compact = (value) => normalize(value).replace(/\s+/g, '');
+    const levenshtein = (a, b) => {
+      if (a === b) return 0;
+      if (!a) return b.length;
+      if (!b) return a.length;
+      let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+      for (let i = 1; i <= a.length; i++) {
+        const curr = [i];
+        for (let j = 1; j <= b.length; j++) {
+          curr[j] = Math.min(
+            prev[j] + 1,
+            curr[j - 1] + 1,
+            prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+          );
+        }
+        prev = curr;
+      }
+      return prev[b.length];
+    };
+    const similarity = (query, text) => {
+      if (!query || !text) return 0;
+      const q = compact(query);
+      const t = compact(text);
+      if (!q || !t) return 0;
+      if (t.includes(q) || q.includes(t)) return 1;
+      if (t.startsWith(q) || q.startsWith(t)) return 0.95;
+      if (q.length <= 2) return t.split(' ').some(part => part.startsWith(q)) ? 0.85 : 0;
+      const words = normalize(text).split(' ').filter(Boolean);
+      const bestWord = words.reduce((best, word) => {
+        const qw = compact(word);
+        const score = qw ? 1 - (levenshtein(q, qw) / Math.max(q.length, qw.length)) : 0;
+        return Math.max(best, score);
+      }, 0);
+      const whole = 1 - (levenshtein(q, t) / Math.max(q.length, t.length));
+      return Math.max(bestWord, whole);
+    };
+    const matches = (query, text) => {
+      const q = normalize(query);
+      if (!q) return true;
+      const searchable = normalize(text);
+      if (searchable.includes(q)) return true;
+      return q.split(' ').filter(Boolean).some(part => similarity(part, searchable) >= 0.62);
+    };
     filter.addEventListener('input', function () {
       const term = this.value.trim().toLowerCase();
       blocks.forEach(el => {
-        el.classList.toggle('hidden', term && !el.textContent.toLowerCase().includes(term));
+        el.classList.toggle('hidden', term && !matches(term, el.textContent));
       });
     });
 
